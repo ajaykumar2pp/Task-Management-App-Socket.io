@@ -1,0 +1,118 @@
+<!-- no need to change the prewritten code.
+complete the script tag code. -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Task Management App</title>
+</head>
+
+<body>
+    <div id="task-form">
+        <!-- Create a form to add new tasks -->
+        <form id="taskForm">
+            <input type="text" id="taskInput" placeholder="Enter a new task" required>
+            <button id="create-task" type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <div id="taskList">
+        <!-- Tasks will be displayed here -->
+    </div>
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://localhost:3000');
+
+        // -------------------write your code here.--------------------//
+        const taskForm = document.getElementById('taskForm')
+        const taskInput = document.getElementById('taskInput')
+        const taskList = document.getElementById('taskList')
+
+        // Send Task Data 
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+            const taskText = taskInput.value;
+
+            if (taskText.trim()) {
+                socket.emit('addTask', taskText);
+
+                // Clear input
+                taskInput.value = '';
+            }
+
+        })
+
+        // Display Task Data
+        socket.on('addTask', (task) => {
+            console.log(task)
+            const taskItem = document.createElement('div');
+            taskItem.setAttribute('data-id', task._id);
+            taskItem.innerHTML = `
+        <span>${task.text}</span>
+        <button class="update-task">Update</button>
+        <button class="delete-task">Delete</button>
+      `;
+            taskList.appendChild(taskItem);
+        });
+
+        // Previous Task Data 
+        socket.on('loadTasks', (tasks) => {
+            tasks.forEach((task) => {
+                const taskItem = document.createElement('div');
+                taskItem.setAttribute('data-id', task._id);
+                taskItem.innerHTML = `
+          <span>${task.text}</span>
+           <button class="update-task">Update</button>
+          <button class="delete-task">Delete</button>
+        `;
+                taskList.appendChild(taskItem);
+            });
+        });
+
+        // Listen Delete Task Data 
+        socket.on('deleteTask', (taskId) => {
+            const taskItem = document.querySelector(`[data-id='${taskId}']`);
+            if (taskItem) {
+                taskList.removeChild(taskItem);
+            }
+        });
+
+        // Listen Update Task
+        socket.on('updateTask', (updatedTask) => {
+            const taskItem = document.querySelector(`[data-id='${updatedTask._id}']`);
+            if (taskItem) {
+                const taskTextElem = taskItem.querySelector('span');
+                taskTextElem.textContent = updatedTask.text;
+            }
+        });
+
+        // Delete Task Handle 
+        taskList.addEventListener('click', (e) => {
+            // console.log("Delete Task", e)
+            if (e.target.classList.contains('delete-task')) {
+                const taskItem = e.target.closest('[data-id]');
+                const taskId = taskItem.getAttribute('data-id');
+                socket.emit('deleteTask', taskId);
+            }
+        });
+
+        // Handle task updating
+        taskList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('update-task')) {
+                const taskItem = e.target.closest('[data-id]');
+                const taskId = taskItem.getAttribute('data-id');
+                const currentText = taskItem.querySelector('span').textContent;
+
+                // Prompt the user to update the task text
+                const updatedText = prompt('Update the task:', currentText);
+                if (updatedText && updatedText.trim()) {
+                    socket.emit('updateTask', { taskId, updatedText }); 
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
