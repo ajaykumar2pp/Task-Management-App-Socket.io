@@ -5,7 +5,9 @@ complete the script tag code. -->
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Task Management App</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
@@ -51,8 +53,10 @@ complete the script tag code. -->
             taskItem.setAttribute('data-id', task._id);
             taskItem.innerHTML = `
         <span>${task.text}</span>
+               <div>
         <button class="update-task">Update</button>
-        <button class="delete-task">Delete</button>
+          <button class="delete-task">Delete</button>
+        </div>
       `;
             taskList.appendChild(taskItem);
         });
@@ -64,8 +68,11 @@ complete the script tag code. -->
                 taskItem.setAttribute('data-id', task._id);
                 taskItem.innerHTML = `
           <span>${task.text}</span>
-           <button class="update-task">Update</button>
+          <div>
+        <button class="update-task">Update</button>
           <button class="delete-task">Delete</button>
+        </div>
+  
         `;
                 taskList.appendChild(taskItem);
             });
@@ -108,7 +115,7 @@ complete the script tag code. -->
                 // Prompt the user to update the task text
                 const updatedText = prompt('Update the task:', currentText);
                 if (updatedText && updatedText.trim()) {
-                    socket.emit('updateTask', { taskId, updatedText }); 
+                    socket.emit('updateTask', { taskId, updatedText });
                 }
             }
         });
